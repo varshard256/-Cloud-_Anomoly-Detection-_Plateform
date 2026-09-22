@@ -1,0 +1,91 @@
+{% extends "dashboard/base_dashboard.html" %}
+{% set active_page = 'servers' %}
+{% block title %}{{ 'Edit Server' if server else 'Add Server' }}{% endblock %}
+{% block content %}
+<h4 class="mb-4">{{ 'Edit ' + server.name if server else 'Add a New Server' }}</h4>
+<div class="card-panel p-4" style="max-width: 680px;">
+  <form method="POST">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="row g-3">
+      <div class="col-md-6">
+        <label class="form-label-dark">Server Name</label>
+        <input type="text" name="name" class="form-control form-control-dark" required value="{{ server.name if server else '' }}">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label-dark">IP Address</label>
+        <input type="text" name="ip_address" class="form-control form-control-dark" required value="{{ server.ip_address if server else '10.0.0.' ~ range(2,254)|random }}">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label-dark">Server Type</label>
+        <select name="server_type" class="form-select form-control-dark">
+          {% for t in server_types %}
+          <option value="{{ t }}" {{ 'selected' if server and server.server_type==t }}>{{ t }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label-dark">Operating System</label>
+        <select name="operating_system" class="form-select form-control-dark">
+          {% for os in os_choices %}
+          <option value="{{ os }}" {{ 'selected' if server and server.operating_system==os }}>{{ os }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label-dark">Location / Region</label>
+        <input type="text" name="location" class="form-control form-control-dark" value="{{ server.location if server else 'ap-south-1 (Mumbai)' }}">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label-dark">Status</label>
+        <select name="status" class="form-select form-control-dark">
+          <option value="running" {{ 'selected' if server and server.status=='running' }}>Running</option>
+          <option value="stopped" {{ 'selected' if server and server.status=='stopped' }}>Stopped</option>
+          <option value="maintenance" {{ 'selected' if server and server.status=='maintenance' }}>Maintenance</option>
+        </select>
+      </div>
+      <div class="col-md-4">
+        <label class="form-label-dark">CPU Cores</label>
+        <input type="number" name="cpu_cores" class="form-control form-control-dark" value="{{ server.cpu_cores if server else 4 }}">
+      </div>
+      <div class="col-md-4">
+        <label class="form-label-dark">Memory (GB)</label>
+        <input type="number" name="memory_gb" class="form-control form-control-dark" value="{{ server.memory_gb if server else 16 }}">
+      </div>
+      <div class="col-md-4">
+        <label class="form-label-dark">Disk (GB)</label>
+        <input type="number" name="disk_gb" class="form-control form-control-dark" value="{{ server.disk_gb if server else 100 }}">
+      </div>
+
+      {% if server %}
+      <div class="col-12 mt-2"><hr style="border-color: var(--border-soft);"><div style="color:var(--text-muted); font-size:0.85rem; margin-bottom: 0.5rem;">Alert Thresholds (%)</div></div>
+      <div class="col-md-4">
+        <label class="form-label-dark">CPU Warning / Critical</label>
+        <div class="d-flex gap-2">
+          <input type="number" name="cpu_warning_threshold" class="form-control form-control-dark" value="{{ server.cpu_warning_threshold }}">
+          <input type="number" name="cpu_critical_threshold" class="form-control form-control-dark" value="{{ server.cpu_critical_threshold }}">
+        </div>
+      </div>
+      <div class="col-md-4">
+        <label class="form-label-dark">Memory Warning / Critical</label>
+        <div class="d-flex gap-2">
+          <input type="number" name="memory_warning_threshold" class="form-control form-control-dark" value="{{ server.memory_warning_threshold }}">
+          <input type="number" name="memory_critical_threshold" class="form-control form-control-dark" value="{{ server.memory_critical_threshold }}">
+        </div>
+      </div>
+      <div class="col-md-4">
+        <label class="form-label-dark">Disk Warning / Critical</label>
+        <div class="d-flex gap-2">
+          <input type="number" name="disk_warning_threshold" class="form-control form-control-dark" value="{{ server.disk_warning_threshold }}">
+          <input type="number" name="disk_critical_threshold" class="form-control form-control-dark" value="{{ server.disk_critical_threshold }}">
+        </div>
+      </div>
+      {% endif %}
+    </div>
+
+    <div class="d-flex gap-2 mt-4">
+      <button type="submit" class="btn btn-signal">{{ 'Save Changes' if server else 'Add Server & Seed History' }}</button>
+      <a href="{{ url_for('servers.list_servers') }}" class="btn btn-outline-signal">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

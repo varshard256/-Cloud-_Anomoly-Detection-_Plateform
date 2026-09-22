@@ -1,0 +1,84 @@
+{% extends "dashboard/base_dashboard.html" %}
+{% set active_page = 'servers' %}
+{% block title %}{{ server.name }}{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h4 class="mb-0 mono">{{ server.name }}</h4>
+    <p style="color:var(--text-muted); font-size:0.88rem; margin:0;">{{ server.ip_address }} &middot; {{ server.server_type }} &middot; {{ server.location }}</p>
+  </div>
+  <div class="d-flex gap-2">
+    <a href="{{ url_for('monitoring.server_detail', server_id=server.id) }}" class="btn btn-outline-signal btn-sm"><i class="bi bi-activity"></i> Live Monitor</a>
+    <a href="{{ url_for('servers.edit_server', server_id=server.id) }}" class="btn btn-outline-signal btn-sm"><i class="bi bi-pencil"></i> Edit</a>
+  </div>
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-6 col-lg-3">
+    <div class="stat-card is-signal"><div class="stat-label">Health</div><div class="stat-value" style="font-size:1.3rem;">
+      <span class="badge-severity-{{ 'critical' if server.health=='critical' else ('medium' if server.health=='warning' else 'low') }} px-2 py-1 rounded">{{ server.health }}</span>
+    </div></div>
+  </div>
+  <div class="col-6 col-lg-3"><div class="stat-card is-signal"><div class="stat-label">CPU Cores</div><div class="stat-value">{{ server.cpu_cores }}</div></div></div>
+  <div class="col-6 col-lg-3"><div class="stat-card is-signal"><div class="stat-label">Memory</div><div class="stat-value">{{ server.memory_gb }} GB</div></div></div>
+  <div class="col-6 col-lg-3"><div class="stat-card is-signal"><div class="stat-label">Disk</div><div class="stat-value">{{ server.disk_gb }} GB</div></div></div>
+</div>
+
+<div class="row g-3">
+  <div class="col-lg-8">
+    <div class="card-panel p-4 mb-3">
+      <h6 class="mb-3">CPU / Memory / Disk — last {{ recent_metrics|length }} readings</h6>
+      <canvas id="metricChart" height="90"></canvas>
+    </div>
+  </div>
+  <div class="col-lg-4">
+    <div class="card-panel p-4">
+      <h6 class="mb-3">Recent Anomalies</h6>
+      {% if recent_anomalies %}
+        {% for a in recent_anomalies %}
+        <div class="d-flex justify-content-between align-items-center py-2" style="border-bottom:1px solid var(--border-soft);">
+          <div>
+            <div style="font-size:0.85rem;">{{ a.anomaly_type }}</div>
+            <div class="mono" style="color:var(--text-faint); font-size:0.7rem;">{{ a.detected_at.strftime('%d %b, %H:%M') }}</div>
+          </div>
+          <span class="badge-severity-{{ a.severity }} px-2 py-1 rounded" style="font-size:0.68rem;">{{ a.severity }}</span>
+        </div>
+        {% endfor %}
+      {% else %}
+        <p style="color:var(--text-muted); font-size:0.86rem;">No anomalies detected for this server yet.</p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<script>
+const labels = {{ recent_metrics|map(attribute='timestamp')|map('string')|list|tojson }};
+const cpu = {{ recent_metrics|map(attribute='cpu_usage')|list|tojson }};
+const mem = {{ recent_metrics|map(attribute='memory_usage')|list|tojson }};
+const disk = {{ recent_metrics|map(attribute='disk_usage')|list|tojson }};
+
+const c = chartColors();
+new Chart(document.getElementById('metricChart').getContext('2d'), {
+  type: 'line',
+  data: {
+    labels: labels.map(l => new Date(l).toLocaleTimeString()),
+    datasets: [
+      { label: 'CPU %', data: cpu, borderColor: c.primary, pointRadius: 0, tension: 0.3, borderWidth: 2 },
+      { label: 'Memory %', data: mem, borderColor: c.secondary, pointRadius: 0, tension: 0.3, borderWidth: 2 },
+      { label: 'Disk %', data: disk, borderColor: c.warning, pointRadius: 0, tension: 0.3, borderWidth: 1.5 },
+    ],
+  },
+  options: {
+    responsive: true,
+    scales: {
+      x: { ticks: { color: c.textMuted, maxTicksLimit: 8 }, grid: { color: c.grid } },
+      y: { ticks: { color: c.textMuted }, grid: { color: c.grid } },
+    },
+    plugins: { legend: { labels: { color: c.text } } },
+  },
+});
+</script>
+{% endblock %}

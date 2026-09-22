@@ -1,0 +1,28 @@
+{% extends "dashboard/base_dashboard.html" %}
+{% set active_page = 'admin_logs' %}
+{% block title %}System Logs{% endblock %}
+{% block content %}
+<h4 class="mb-4">System Logs</h4>
+<div class="card-panel p-4">
+  <div class="table-responsive">
+    <table class="table table-borderless align-middle mb-0" style="color:var(--text);">
+      <thead>
+        <tr style="color:var(--text-faint); font-size:0.75rem; text-transform:uppercase;">
+          <th>Time</th><th>Action</th><th>Description</th><th>Level</th><th>IP</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for l in logs %}
+        <tr style="border-top:1px solid var(--border-soft);">
+          <td class="mono" style="font-size:0.8rem; color:var(--text-faint);">{{ l.created_at.strftime('%d %b %H:%M:%S') }}</td>
+          <td>{{ l.action }}</td>
+          <td style="color:var(--text-muted); font-size:0.87rem;">{{ l.description }}</td>
+          <td><span class="badge-severity-{{ 'high' if l.level=='error' else ('medium' if l.level=='warning' else 'low') }} px-2 py-1 rounded" style="font-size:0.7rem;">{{ l.level }}</span></td>
+          <td class="mono" style="font-size:0.8rem; color:var(--text-faint);">{{ l.ip_address }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,66 @@
+{% extends "dashboard/base_dashboard.html" %}
+{% set active_page = 'resources' %}
+{% block title %}Resource Monitoring{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h4 class="mb-0">Cloud Resource Monitoring</h4>
+    <p style="color:var(--text-muted); font-size:0.88rem; margin:0;">Live-updating fleet status &middot; auto-refreshes every 5 seconds.</p>
+  </div>
+  <span class="mono" id="live-indicator" style="color: var(--signal); font-size:0.8rem;">&#9679; LIVE</span>
+</div>
+
+{% if servers %}
+<div class="row g-3" id="server-cards">
+  {% for s in servers %}
+  <div class="col-md-6 col-lg-4">
+    <a href="{{ url_for('monitoring.server_detail', server_id=s.id) }}" class="text-decoration-none">
+    <div class="card-panel p-3" id="card-{{ s.id }}">
+      <div class="d-flex justify-content-between align-items-start mb-3">
+        <div>
+          <div class="mono" style="color:var(--text); font-weight:600;">{{ s.name }}</div>
+          <div style="color:var(--text-muted); font-size:0.78rem;">{{ s.server_type }}</div>
+        </div>
+        <span class="badge-severity-low px-2 py-1 rounded health-badge" style="font-size:0.68rem;">{{ s.health }}</span>
+      </div>
+      <div class="row g-2 mono" style="font-size:0.82rem;">
+        <div class="col-4"><div style="color:var(--text-faint); font-size:0.68rem;">CPU</div><span class="cpu-val">—</span>%</div>
+        <div class="col-4"><div style="color:var(--text-faint); font-size:0.68rem;">MEM</div><span class="mem-val">—</span>%</div>
+        <div class="col-4"><div style="color:var(--text-faint); font-size:0.68rem;">DISK</div><span class="disk-val">—</span>%</div>
+      </div>
+    </div>
+    </a>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="card-panel p-5 text-center">
+  <p style="color:var(--text-muted);">No servers to monitor yet.</p>
+  <a href="{{ url_for('servers.add_server') }}" class="btn btn-signal btn-sm">Add a server</a>
+</div>
+{% endif %}
+{% endblock %}
+{% block extra_js %}
+<script>
+async function tick() {
+  try {
+    const res = await fetch("{{ url_for('monitoring.api_tick') }}", { method: "POST", headers: { "X-CSRFToken": document.querySelector('meta[name="csrf-token"]').content } });
+    const data = await res.json();
+    if (data.status !== "ok") return;
+    data.metrics.forEach(m => {
+      const card = document.getElementById('card-' + m.server_id);
+      if (!card) return;
+      card.querySelector('.cpu-val').textContent = m.cpu_usage.toFixed(1);
+      card.querySelector('.mem-val').textContent = m.memory_usage.toFixed(1);
+      card.querySelector('.disk-val').textContent = m.disk_usage.toFixed(1);
+      const badge = card.querySelector('.health-badge');
+      badge.textContent = m.health;
+      badge.className = 'badge-severity-' + (m.health === 'critical' ? 'critical' : (m.health === 'warning' ? 'medium' : 'low')) + ' px-2 py-1 rounded health-badge';
+      badge.style.fontSize = '0.68rem';
+    });
+  } catch (e) { /* ignore transient errors */ }
+}
+tick();
+setInterval(tick, 5000);
+</script>
+{% endblock %}

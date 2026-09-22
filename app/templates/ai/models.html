@@ -1,0 +1,88 @@
+{% extends "dashboard/base_dashboard.html" %}
+{% set active_page = 'models' %}
+{% block title %}Model Comparison{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h4 class="mb-0">Model Comparison</h4>
+    <p style="color:var(--text-muted); font-size:0.88rem; margin:0;">
+      {% if active %}Active model: <strong style="color:var(--signal);">{{ active.name }}</strong>{% else %}No model trained yet.{% endif %}
+    </p>
+  </div>
+  <a href="{{ url_for('ai.train') }}" class="btn btn-signal btn-sm"><i class="bi bi-cpu"></i> Train New Batch</a>
+</div>
+
+{% if models %}
+<div class="card-panel p-4 mb-4">
+  <div class="table-responsive">
+    <table class="table table-borderless align-middle mb-0" style="color:var(--text); font-size:0.85rem;">
+      <thead><tr style="color:var(--text-faint); font-size:0.7rem; text-transform:uppercase;">
+        <th></th><th>Model</th><th>Accuracy</th><th>Precision</th><th>Recall</th><th>F1</th><th>ROC-AUC</th><th>Trained</th><th></th>
+      </tr></thead>
+      <tbody>
+        {% for m in models %}
+        <tr style="border-top:1px solid var(--border-soft);{{ ' background: rgba(34,211,184,0.05);' if m.is_active }}">
+          <td>{% if m.is_active %}<i class="bi bi-check-circle-fill" style="color:var(--signal);"></i>{% endif %}</td>
+          <td class="mono">{{ m.name }}</td>
+          <td class="mono">{{ m.accuracy }}</td>
+          <td class="mono">{{ m.precision_score }}</td>
+          <td class="mono">{{ m.recall_score }}</td>
+          <td class="mono" style="font-weight:700;">{{ m.f1_score }}</td>
+          <td class="mono">{{ m.roc_auc if m.roc_auc is not none else '—' }}</td>
+          <td class="mono" style="color:var(--text-faint); font-size:0.76rem;">{{ m.trained_at.strftime('%d %b %H:%M') }}</td>
+          <td>
+            {% if not m.is_active %}
+            <form method="POST" action="{{ url_for('ai.activate', model_id=m.id) }}">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button type="submit" class="btn btn-outline-signal btn-sm">Activate</button>
+            </form>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="row g-3">
+  {% for m in models[:4] %}
+  <div class="col-lg-6">
+    <div class="card-panel p-4">
+      <h6 class="mb-3 mono">{{ m.name }}{% if m.is_active %} <span class="badge-severity-low px-2 py-1 rounded" style="font-size:0.65rem;">ACTIVE</span>{% endif %}</h6>
+
+      {% if m.confusion_matrix %}
+      <div style="color:var(--text-muted); font-size:0.78rem; margin-bottom:0.4rem;">Confusion Matrix</div>
+      <table class="table table-borderless mb-3" style="color:var(--text); font-size:0.8rem; max-width:280px;">
+        <tr><td></td><td class="mono text-center" style="color:var(--text-faint);">Pred Normal</td><td class="mono text-center" style="color:var(--text-faint);">Pred Anomaly</td></tr>
+        <tr><td class="mono" style="color:var(--text-faint);">Actual Normal</td><td class="mono text-center">{{ m.confusion_matrix[0][0] }}</td><td class="mono text-center" style="color:var(--warning);">{{ m.confusion_matrix[0][1] }}</td></tr>
+        <tr><td class="mono" style="color:var(--text-faint);">Actual Anomaly</td><td class="mono text-center" style="color:var(--warning);">{{ m.confusion_matrix[1][0] }}</td><td class="mono text-center" style="color:var(--signal);">{{ m.confusion_matrix[1][1] }}</td></tr>
+      </table>
+      {% endif %}
+
+      {% if m.feature_importance %}
+      <div style="color:var(--text-muted); font-size:0.78rem; margin-bottom:0.4rem;">Feature Importance</div>
+      {% for feat, imp in m.feature_importance.items()|sort(attribute='1', reverse=true) %}
+      <div class="d-flex align-items-center gap-2 mb-1">
+        <div class="mono" style="width:140px; font-size:0.74rem; color:var(--text-muted);">{{ feat }}</div>
+        <div style="flex:1; background:var(--surface-2); border-radius:4px; height:8px; overflow:hidden;">
+          <div style="width:{{ (imp * 100 * 4)|round }}%; background:var(--signal); height:100%;"></div>
+        </div>
+        <div class="mono" style="width:44px; font-size:0.72rem; text-align:right;">{{ (imp*100)|round(1) }}%</div>
+      </div>
+      {% endfor %}
+      {% else %}
+      <p style="color:var(--text-faint); font-size:0.78rem;">Feature importance not available for this unsupervised model.</p>
+      {% endif %}
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+{% else %}
+<div class="card-panel p-5 text-center">
+  <p style="color:var(--text-muted);">No models trained yet.</p>
+  <a href="{{ url_for('ai.train') }}" class="btn btn-signal btn-sm">Train your first batch</a>
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,122 @@
+{% extends "dashboard/base_dashboard.html" %}
+{% set active_page = 'dashboard' %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h4 class="mb-0">Overview</h4>
+    <p style="color:var(--text-muted); font-size:0.88rem; margin:0;">Fleet health at a glance.</p>
+  </div>
+  <a href="{{ url_for('servers.add_server') }}" class="btn btn-signal btn-sm"><i class="bi bi-plus-lg"></i> Add Server</a>
+</div>
+
+<div class="row g-3 mb-3">
+  <div class="col-6 col-lg-3">
+    <div class="stat-card is-signal">
+      <div class="stat-label">Total Servers</div>
+      <div class="stat-value">{{ stats.total_servers }}</div>
+    </div>
+  </div>
+  <div class="col-6 col-lg-3">
+    <div class="stat-card is-signal">
+      <div class="stat-label">Healthy Servers</div>
+      <div class="stat-value">{{ stats.healthy_servers }}</div>
+    </div>
+  </div>
+  <div class="col-6 col-lg-3">
+    <div class="stat-card is-warning">
+      <div class="stat-label">Anomalies Today</div>
+      <div class="stat-value">{{ stats.anomalies_today }}</div>
+    </div>
+  </div>
+  <div class="col-6 col-lg-3">
+    <div class="stat-card is-alert">
+      <div class="stat-label">Critical Alerts</div>
+      <div class="stat-value">{{ stats.critical_alerts }}</div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-6 col-lg-3">
+    <div class="stat-card"><div class="stat-label">CPU Average</div><div class="stat-value" style="font-size:1.4rem;">{{ stats.cpu_avg }}%</div></div>
+  </div>
+  <div class="col-6 col-lg-3">
+    <div class="stat-card"><div class="stat-label">Memory Average</div><div class="stat-value" style="font-size:1.4rem;">{{ stats.memory_avg }}%</div></div>
+  </div>
+  <div class="col-6 col-lg-3">
+    <div class="stat-card"><div class="stat-label">Disk Usage</div><div class="stat-value" style="font-size:1.4rem;">{{ stats.disk_avg }}%</div></div>
+  </div>
+  <div class="col-6 col-lg-3">
+    <div class="stat-card"><div class="stat-label">Network Usage</div><div class="stat-value" style="font-size:1.4rem;">{{ stats.network_avg }}</div></div>
+  </div>
+</div>
+
+<div class="row g-3">
+  <div class="col-lg-7">
+    <div class="card-panel p-4">
+      <h6 class="mb-3">Your Servers</h6>
+      {% if servers %}
+      <div class="table-responsive">
+        <table class="table table-borderless align-middle mb-0" style="color:var(--text);">
+          <thead>
+            <tr style="color:var(--text-faint); font-size:0.75rem; text-transform:uppercase;">
+              <th>Name</th><th>Type</th><th>Status</th><th>Health</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for s in servers %}
+            <tr style="border-top:1px solid var(--border-soft); cursor:pointer;" onclick="window.location='{{ url_for('servers.detail', server_id=s.id) }}'">
+              <td class="mono">{{ s.name }}</td>
+              <td style="color:var(--text-muted);">{{ s.server_type }}</td>
+              <td><span class="badge-severity-low px-2 py-1 rounded" style="font-size:0.72rem;">{{ s.status }}</span></td>
+              <td><span class="badge-severity-{{ 'critical' if s.health=='critical' else ('medium' if s.health=='warning' else 'low') }} px-2 py-1 rounded" style="font-size:0.72rem;">{{ s.health }}</span></td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="text-center py-5">
+        <p style="color:var(--text-muted);">No servers yet. Add your first cloud resource to start monitoring.</p>
+        <a href="{{ url_for('servers.add_server') }}" class="btn btn-signal btn-sm">Add Server</a>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="col-lg-5">
+    <div class="card-panel p-4 mb-3">
+      <h6 class="mb-3">Recent Anomalies</h6>
+      {% if recent_anomalies %}
+        {% for a in recent_anomalies %}
+        <div class="d-flex justify-content-between align-items-center py-2" style="border-bottom:1px solid var(--border-soft);">
+          <div>
+            <div style="font-size:0.88rem;">{{ a.anomaly_type }}</div>
+            <div class="mono" style="color:var(--text-faint); font-size:0.72rem;">{{ a.detected_at.strftime('%d %b, %H:%M') }}</div>
+          </div>
+          <span class="badge-severity-{{ a.severity }} px-2 py-1 rounded" style="font-size:0.7rem;">{{ a.severity }}</span>
+        </div>
+        {% endfor %}
+      {% else %}
+        <p style="color:var(--text-muted); font-size:0.88rem;">No anomalies detected yet.</p>
+      {% endif %}
+    </div>
+
+    <div class="card-panel p-4">
+      <h6 class="mb-3">Open Alerts</h6>
+      {% if open_alerts %}
+        {% for al in open_alerts %}
+        <div class="py-2" style="border-bottom:1px solid var(--border-soft); font-size:0.86rem;">
+          {{ al.message }}
+        </div>
+        {% endfor %}
+      {% else %}
+        <p style="color:var(--text-muted); font-size:0.88rem;">You're all caught up.</p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+{% endblock %}

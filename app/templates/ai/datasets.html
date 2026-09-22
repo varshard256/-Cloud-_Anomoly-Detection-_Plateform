@@ -1,0 +1,50 @@
+{% extends "dashboard/base_dashboard.html" %}
+{% set active_page = 'datasets' %}
+{% block title %}Datasets{% endblock %}
+{% block content %}
+<h4 class="mb-4">Dataset Upload</h4>
+
+<div class="row g-3">
+  <div class="col-lg-5">
+    <div class="card-panel p-4">
+      <h6 class="mb-3">Upload a labeled CSV</h6>
+      <p style="color:var(--text-muted); font-size:0.84rem;">
+        Must include: cpu_usage, memory_usage, disk_usage, disk_io, network_throughput,
+        network_latency, packet_loss, bandwidth, response_time, error_rate, request_rate.
+        An <code>is_anomalous</code> column (0/1) is recommended for supervised models.
+      </p>
+      <form method="POST" enctype="multipart/form-data">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="file" name="file" accept=".csv" class="form-control form-control-dark mb-3" required>
+        <button type="submit" class="btn btn-signal btn-sm w-100">Upload Dataset</button>
+      </form>
+    </div>
+  </div>
+  <div class="col-lg-7">
+    <div class="card-panel p-4">
+      <h6 class="mb-3">Uploaded Datasets</h6>
+      {% if datasets %}
+      <div class="table-responsive">
+        <table class="table table-borderless align-middle mb-0" style="color:var(--text); font-size:0.86rem;">
+          <thead><tr style="color:var(--text-faint); font-size:0.72rem; text-transform:uppercase;">
+            <th>File</th><th>Rows</th><th>Status</th><th>Uploaded</th>
+          </tr></thead>
+          <tbody>
+            {% for d in datasets %}
+            <tr style="border-top:1px solid var(--border-soft);">
+              <td class="mono">{{ d.original_filename }}</td>
+              <td>{{ d.row_count }}</td>
+              <td><span class="badge-severity-low px-2 py-1 rounded" style="font-size:0.68rem;">{{ d.status }}</span></td>
+              <td class="mono" style="color:var(--text-faint); font-size:0.76rem;">{{ d.uploaded_at.strftime('%d %b %H:%M') }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <p style="color:var(--text-muted); font-size:0.86rem;">No datasets uploaded yet — you can also train directly on live simulated metrics from Model Training.</p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

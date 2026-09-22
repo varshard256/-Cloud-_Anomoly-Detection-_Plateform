@@ -1,0 +1,42 @@
+{% extends "dashboard/base_dashboard.html" %}
+{% set active_page = 'admin_users' %}
+{% block title %}User Management{% endblock %}
+{% block content %}
+<h4 class="mb-4">User Management</h4>
+<div class="card-panel p-4">
+  <div class="table-responsive">
+    <table class="table table-borderless align-middle mb-0" style="color:var(--text);">
+      <thead>
+        <tr style="color:var(--text-faint); font-size:0.75rem; text-transform:uppercase;">
+          <th>Name</th><th>Email</th><th>Role</th><th>Status</th><th>Joined</th><th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for u in users %}
+        <tr style="border-top:1px solid var(--border-soft);">
+          <td>{{ u.name }}</td>
+          <td class="mono" style="color:var(--text-muted); font-size:0.85rem;">{{ u.email }}</td>
+          <td><span class="badge-severity-{{ 'critical' if u.role=='admin' else 'low' }} px-2 py-1 rounded" style="font-size:0.7rem;">{{ u.role }}</span></td>
+          <td>
+            <span class="badge-severity-{{ 'low' if u.is_active_account else 'high' }} px-2 py-1 rounded" style="font-size:0.7rem;">
+              {{ 'active' if u.is_active_account else 'deactivated' }}
+            </span>
+          </td>
+          <td class="mono" style="color:var(--text-faint); font-size:0.8rem;">{{ u.created_at.strftime('%d %b %Y') }}</td>
+          <td class="text-end">
+            <form method="POST" action="{{ url_for('admin.toggle_user_active', user_id=u.id) }}" class="d-inline">
+              <button class="btn btn-sm btn-outline-signal">{{ 'Deactivate' if u.is_active_account else 'Activate' }}</button>
+            </form>
+            {% if u.role != 'admin' %}
+            <form method="POST" action="{{ url_for('admin.make_admin', user_id=u.id) }}" class="d-inline">
+              <button class="btn btn-sm btn-outline-signal">Make Admin</button>
+            </form>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

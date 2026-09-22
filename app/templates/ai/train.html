@@ -1,0 +1,30 @@
+{% extends "dashboard/base_dashboard.html" %}
+{% set active_page = 'models' %}
+{% block title %}Train Models{% endblock %}
+{% block content %}
+<h4 class="mb-2">Train &amp; Compare Models</h4>
+<p style="color:var(--text-muted); font-size:0.88rem;">
+  Trains Isolation Forest, One-Class SVM, Random Forest, and Decision Tree in one pass on a
+  chronological train/test split, then automatically activates the highest-F1 model for live detection.
+</p>
+
+<div class="card-panel p-4 mt-3" style="max-width:560px;">
+  <form method="POST">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <label class="form-label-dark">Training data source</label>
+    <select name="dataset_id" class="form-select form-control-dark mb-3">
+      <option value="">Live simulated metrics (all servers)</option>
+      {% for d in datasets %}
+      <option value="{{ d.id }}">{{ d.original_filename }} ({{ d.row_count }} rows)</option>
+      {% endfor %}
+    </select>
+    <button type="submit" class="btn btn-signal w-100">
+      <i class="bi bi-cpu"></i> Train All 4 Models
+    </button>
+  </form>
+</div>
+
+<div class="mt-4">
+  <a href="{{ url_for('ai.models') }}" class="btn btn-outline-signal btn-sm"><i class="bi bi-bar-chart"></i> View Model Comparison</a>
+</div>
+{% endblock %}

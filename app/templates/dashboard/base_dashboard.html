@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Dashboard{% endblock %} | NeuroCloud</title>
+  <script>(function(){var t=localStorage.getItem("cs-theme")||"dark";document.documentElement.setAttribute("data-theme",t);})();</script>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+  <link href="{{ url_for('static', filename='css/design-system.css') }}" rel="stylesheet">
+  <meta name="csrf-token" content="{{ csrf_token() }}">
+  {% block extra_css %}{% endblock %}
+</head>
+<body>
+<div class="app-shell">
+
+  <aside class="sidebar" id="sidebar">
+    <a href="{{ url_for('main.home') }}" class="brand px-2 mb-4 d-inline-flex">
+      {% include 'partials/signal_mark.html' %} NeuroCloud
+    </a>
+    <nav class="nav flex-column">
+      <a class="nav-link {{ 'active' if active_page=='dashboard' }}" href="{{ url_for('dashboard.index') }}"><i class="bi bi-speedometer2"></i> Dashboard</a>
+      <a class="nav-link {{ 'active' if active_page=='servers' }}" href="{{ url_for('servers.list_servers') }}"><i class="bi bi-server"></i> My Servers</a>
+      <a class="nav-link {{ 'active' if active_page=='resources' }}" href="{{ url_for('monitoring.index') }}"><i class="bi bi-hdd-network"></i> Resource Monitoring</a>
+      <a class="nav-link {{ 'active' if active_page=='detection' }}" href="{{ url_for('ai.anomalies') }}"><i class="bi bi-cpu"></i> AI Detection</a>
+      <a class="nav-link {{ 'active' if active_page=='models' }}" href="{{ url_for('ai.models') }}"><i class="bi bi-diagram-3"></i> Model Training</a>
+      <a class="nav-link {{ 'active' if active_page=='prediction' }}" href="{{ url_for('ai.predictions') }}"><i class="bi bi-graph-up-arrow"></i> Prediction</a>
+      <a class="nav-link {{ 'active' if active_page=='analytics' }}" href="{{ url_for('analytics.index') }}"><i class="bi bi-bar-chart"></i> Analytics</a>
+      <a class="nav-link {{ 'active' if active_page=='reports' }}" href="{{ url_for('reports.index') }}"><i class="bi bi-file-earmark-text"></i> Reports</a>
+      <a class="nav-link {{ 'active' if active_page=='datasets' }}" href="{{ url_for('ai.datasets') }}"><i class="bi bi-upload"></i> Dataset Upload</a>
+      <a class="nav-link {{ 'active' if active_page=='alerts' }}" href="{{ url_for('alerts.index') }}">
+        <i class="bi bi-bell"></i> Alerts
+        {% if unread_alert_count %}<span class="badge-severity-critical rounded-pill ms-auto" style="font-size:0.65rem; padding:0.15rem 0.5rem;">{{ unread_alert_count }}</span>{% endif %}
+      </a>
+
+      {% if current_user.is_authenticated and current_user.is_admin %}
+      <div class="mt-3 mb-1 px-2" style="color:var(--text-faint); font-size:0.7rem; text-transform:uppercase; letter-spacing:0.06em;">Admin</div>
+      <a class="nav-link {{ 'active' if active_page=='admin_users' }}" href="{{ url_for('admin.users') }}"><i class="bi bi-people"></i> User Management</a>
+      <a class="nav-link {{ 'active' if active_page=='admin_servers' }}" href="{{ url_for('servers.list_servers') }}"><i class="bi bi-server"></i> All Servers</a>
+      <a class="nav-link {{ 'active' if active_page=='admin_logs' }}" href="{{ url_for('admin.logs') }}"><i class="bi bi-journal-text"></i> System Logs</a>
+      {% endif %}
+
+      <div class="mt-3 mb-1 px-2" style="color:var(--text-faint); font-size:0.7rem; text-transform:uppercase; letter-spacing:0.06em;">Account</div>
+      <a class="nav-link {{ 'active' if active_page=='profile' }}" href="{{ url_for('auth.profile') }}"><i class="bi bi-person-circle"></i> Profile</a>
+      <a class="nav-link" href="{{ url_for('auth.logout') }}"><i class="bi bi-box-arrow-right"></i> Sign Out</a>
+    </nav>
+  </aside>
+
+  <div class="topbar">
+    <button class="btn btn-sm btn-outline-signal d-md-none" onclick="document.getElementById('sidebar').classList.toggle('open')">
+      <i class="bi bi-list"></i>
+    </button>
+    <div></div>
+    <div class="d-flex align-items-center gap-3">
+      <button id="theme-toggle" class="btn btn-sm btn-outline-signal" type="button" title="Toggle dark / light mode">
+        <i class="bi bi-moon-stars" id="theme-icon"></i>
+      </button>
+      <span style="color:var(--text-muted); font-size:0.88rem;">{{ current_user.name if current_user.is_authenticated }}</span>
+      <span class="badge-severity-{{ 'critical' if current_user.is_admin else 'low' }} px-2 py-1 rounded" style="font-size:0.7rem;">{{ current_user.role.upper() if current_user.is_authenticated }}</span>
+    </div>
+  </div>
+
+  <main class="main-content">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }} py-2" style="background:var(--surface-2); color:var(--text); border:1px solid var(--border); font-size:0.9rem;">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+    {% block content %}{% endblock %}
+  </main>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="{{ url_for('static', filename='js/theme.js') }}"></script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,74 @@
+{% extends "dashboard/base_dashboard.html" %}
+{% set active_page = 'analytics' %}
+{% block title %}Analytics{% endblock %}
+{% block content %}
+<h4 class="mb-2">Analytics</h4>
+<p style="color:var(--text-muted); font-size:0.88rem;">Fleet-wide trends over the last 7 days.</p>
+
+<div class="row g-3 mb-3" id="fleet-stats" style="display:flex; flex-wrap:wrap;"></div>
+
+<div class="row g-3 mb-3">
+  <div class="col-lg-6">
+    <div class="card-panel p-4"><h6 class="mb-3">Anomalies by Severity</h6><canvas id="severityChart" height="140"></canvas></div>
+  </div>
+  <div class="col-lg-6">
+    <div class="card-panel p-4"><h6 class="mb-3">Anomalies by Type</h6><canvas id="typeChart" height="140"></canvas></div>
+  </div>
+</div>
+
+<div class="card-panel p-4">
+  <h6 class="mb-3">Top Affected Servers (7d)</h6>
+  <div id="top-servers"></div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<script>
+async function load() {
+  const res = await fetch("{{ url_for('analytics.api_summary') }}");
+  const d = await res.json();
+  if (d.status !== 'ok') return;
+
+  const fa = d.fleet_averages;
+  document.getElementById('fleet-stats').innerHTML = `
+    <div class="col-6" style="flex:1;"><div class="stat-card is-signal"><div class="stat-label">Avg CPU</div><div class="stat-value">${fa.cpu_usage}%</div></div></div>
+    <div class="col-6" style="flex:1;"><div class="stat-card is-signal"><div class="stat-label">Avg Memory</div><div class="stat-value">${fa.memory_usage}%</div></div></div>
+    <div class="col-6" style="flex:1;"><div class="stat-card is-warning"><div class="stat-label">Avg Disk</div><div class="stat-value">${fa.disk_usage}%</div></div></div>
+    <div class="col-6" style="flex:1;"><div class="stat-card is-signal"><div class="stat-label">Avg Network</div><div class="stat-value">${fa.network_throughput}</div></div></div>
+    <div class="col-6" style="flex:1;"><div class="stat-card is-alert"><div class="stat-label">Avg Error Rate</div><div class="stat-value">${fa.error_rate}%</div></div></div>
+  `;
+
+  new Chart(document.getElementById('severityChart').getContext('2d'), {
+    type: 'doughnut',
+    data: {
+      labels: Object.keys(d.severity_counts),
+      datasets: [{ data: Object.values(d.severity_counts), backgroundColor: ['#EF4444','#F59E0B','#3B82F6','#2563EB'] }],
+    },
+    options: { plugins: { legend: { position: 'bottom', labels: { color: chartColors().text } } } },
+  });
+
+  new Chart(document.getElementById('typeChart').getContext('2d'), {
+    type: 'bar',
+    data: {
+      labels: Object.keys(d.type_counts),
+      datasets: [{ label: 'Count', data: Object.values(d.type_counts), backgroundColor: '#2563EB' }],
+    },
+    options: {
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { ticks: { color: chartColors().textMuted, maxRotation: 30, minRotation: 30 }, grid: { display: false } },
+        y: { ticks: { color: chartColors().textMuted }, grid: { color: chartColors().grid }, beginAtZero: true },
+      },
+    },
+  });
+
+  document.getElementById('top-servers').innerHTML = d.top_servers.length
+    ? d.top_servers.map(s => `
+      <div class="d-flex justify-content-between align-items-center py-2" style="border-bottom:1px solid var(--border-soft); font-size:0.86rem;">
+        <span>${s.server}</span><span class="mono badge-severity-medium px-2 py-1 rounded" style="font-size:0.72rem;">${s.count} anomalies</span>
+      </div>`).join('')
+    : '<p style="color:var(--text-muted); font-size:0.86rem;">No anomalies in the last 7 days.</p>';
+}
+load();
+</script>
+{% endblock %}

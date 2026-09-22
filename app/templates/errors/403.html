@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}Access Denied{% endblock %}
+{% block content %}
+<section class="container text-center" style="padding: 6rem 0;">
+  <h1 class="mono" style="font-size:3rem; color:var(--alert);">403</h1>
+  <p style="color:var(--text-muted);">You don't have permission to view this page.</p>
+  <a href="{{ url_for('main.home') }}" class="btn btn-signal mt-3">Back to Home</a>
+</section>
+{% endblock %}

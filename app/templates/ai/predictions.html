@@ -1,0 +1,78 @@
+{% extends "dashboard/base_dashboard.html" %}
+{% set active_page = 'prediction' %}
+{% block title %}Predictions{% endblock %}
+{% block content %}
+<h4 class="mb-2">Prediction Module</h4>
+<p style="color:var(--text-muted); font-size:0.88rem;">Forecasts future CPU / memory / disk usage and estimates failure probability per server.</p>
+
+{% if servers %}
+<div class="card-panel p-4 mb-3" style="max-width:420px;">
+  <label class="form-label-dark">Select server</label>
+  <select id="server-select" class="form-select form-control-dark mb-3">
+    {% for s in servers %}<option value="{{ s.id }}">{{ s.name }}</option>{% endfor %}
+  </select>
+  <button id="predict-btn" class="btn btn-signal btn-sm w-100">Generate 24h Forecast</button>
+</div>
+
+<div id="result-area" style="display:none;">
+  <div class="row g-3 mb-3">
+    <div class="col-6 col-lg-3"><div class="stat-card is-alert"><div class="stat-label">Failure Probability</div><div class="stat-value" id="p-failure">—</div></div></div>
+  </div>
+  <div class="card-panel p-4">
+    <h6 class="mb-3">Forecast — next 24 hours</h6>
+    <canvas id="forecastChart" height="110"></canvas>
+  </div>
+</div>
+<div id="loading" style="display:none; color:var(--text-muted); font-size:0.86rem;">Training a quick forecast model on this server's history…</div>
+<div id="empty-msg" style="color:var(--text-muted); font-size:0.86rem;"></div>
+{% else %}
+<div class="card-panel p-5 text-center"><p style="color:var(--text-muted);">Add a server first to generate predictions.</p></div>
+{% endif %}
+{% endblock %}
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<script>
+let forecastChart;
+document.getElementById('predict-btn')?.addEventListener('click', async () => {
+  const serverId = document.getElementById('server-select').value;
+  document.getElementById('loading').style.display = 'block';
+  document.getElementById('result-area').style.display = 'none';
+  document.getElementById('empty-msg').textContent = '';
+
+  const res = await fetch(`/ai/predictions/api/${serverId}?horizon_hours=24`);
+  const data = await res.json();
+  document.getElementById('loading').style.display = 'none';
+
+  if (data.status !== 'ok') {
+    document.getElementById('empty-msg').textContent = data.message || 'Prediction failed.';
+    return;
+  }
+
+  document.getElementById('p-failure').textContent = data.failure_probability + '%';
+  document.getElementById('result-area').style.display = 'block';
+
+  const c = chartColors();
+  const labels = data.forecast.cpu_usage.map(p => '+' + p.hour_offset + 'h');
+  const datasets = Object.entries(data.forecast).map(([key, points], i) => ({
+    label: key.replace('_', ' '),
+    data: points.map(p => p.predicted_value),
+    borderColor: [c.primary, c.secondary, c.warning][i % 3],
+    pointRadius: 0, tension: 0.3, borderWidth: 2,
+  }));
+
+  if (forecastChart) forecastChart.destroy();
+  forecastChart = new Chart(document.getElementById('forecastChart').getContext('2d'), {
+    type: 'line',
+    data: { labels, datasets },
+    options: {
+      responsive: true,
+      scales: {
+        x: { ticks: { color: c.textMuted, maxTicksLimit: 12 }, grid: { color: c.grid } },
+        y: { ticks: { color: c.textMuted }, grid: { color: c.grid }, beginAtZero: true, max: 100 },
+      },
+      plugins: { legend: { labels: { color: c.text } } },
+    },
+  });
+});
+</script>
+{% endblock %}

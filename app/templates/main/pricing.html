@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Pricing{% endblock %}
+{% block content %}
+<section class="container" style="padding: 4rem 0;">
+  <span class="mono" style="color:var(--signal); font-size:0.8rem;">// PRICING</span>
+  <h1 class="mt-2 mb-5" style="max-width:600px;">Simple tiers for a project that's meant to be run, not billed.</h1>
+  <div class="row g-4">
+    {% set tiers = [
+      ('Starter', '₹0', 'Up to 5 servers, core anomaly detection, email alerts.', false),
+      ('Professional', '₹2,499/mo', 'Up to 50 servers, full model comparison, PDF/Excel reports, predictions.', true),
+      ('Enterprise', 'Custom', 'Unlimited servers, custom thresholds, dedicated support, SSO.', false),
+    ] %}
+    {% for name, price, desc, featured in tiers %}
+    <div class="col-md-4">
+      <div class="card-panel p-4 h-100 {{ 'border-signal' if featured }}" style="{{ 'border-color: var(--signal) !important;' if featured }}">
+        {% if featured %}<span class="badge-severity-medium px-2 py-1 rounded mb-2 d-inline-block" style="font-size:0.7rem;">MOST POPULAR</span>{% endif %}
+        <h5>{{ name }}</h5>
+        <div class="mono" style="font-size:1.8rem; margin:0.5rem 0;">{{ price }}</div>
+        <p style="color:var(--text-muted); font-size:0.88rem;">{{ desc }}</p>
+        <a href="{{ url_for('auth.register') }}" class="btn {{ 'btn-signal' if featured else 'btn-outline-signal' }} w-100 mt-2">Choose {{ name }}</a>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}

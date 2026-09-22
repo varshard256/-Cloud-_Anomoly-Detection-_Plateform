@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Contact{% endblock %}
+{% block content %}
+<section class="container" style="padding: 4rem 0; max-width:600px;">
+  <span class="mono" style="color:var(--signal); font-size:0.8rem;">// CONTACT</span>
+  <h1 class="mt-2 mb-4">Get in touch.</h1>
+  <form method="POST" class="card-panel p-4">
+    <div class="mb-3">
+      <label class="form-label-dark">Name</label>
+      <input type="text" class="form-control form-control-dark" required>
+    </div>
+    <div class="mb-3">
+      <label class="form-label-dark">Email</label>
+      <input type="email" class="form-control form-control-dark" required>
+    </div>
+    <div class="mb-3">
+      <label class="form-label-dark">Message</label>
+      <textarea class="form-control form-control-dark" rows="4" required></textarea>
+    </div>
+    <button type="submit" class="btn btn-signal w-100">Send Message</button>
+  </form>
+</section>
+{% endblock %}

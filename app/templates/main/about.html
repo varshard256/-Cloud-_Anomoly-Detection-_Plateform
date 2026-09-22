@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}About{% endblock %}
+{% block content %}
+<section class="container" style="padding: 4rem 0;">
+  <span class="mono" style="color:var(--signal); font-size:0.8rem;">// ABOUT</span>
+  <h1 class="mt-2 mb-4" style="max-width:600px;">Built to catch the anomaly that a dashboard full of green numbers would miss.</h1>
+  <div class="row g-4 mt-2">
+    <div class="col-md-8">
+      <p style="color:var(--text-muted); line-height:1.7;">
+        NeuroCloud is an AI-based anomaly detection platform for cloud computing environments,
+        developed as an academic major project. It simulates a fleet of cloud servers, streams
+        realistic monitoring metrics, and applies unsupervised and supervised machine learning
+        models — Isolation Forest, Random Forest, One-Class SVM, and Local Outlier Factor — to
+        catch CPU spikes, memory leaks, disk saturation, and network anomalies as they happen.
+      </p>
+      <p style="color:var(--text-muted); line-height:1.7;">
+        Beyond detection, it predicts future resource exhaustion and server failure probability,
+        and recommends a concrete remediation action for every anomaly it finds — closing the loop
+        from signal to fix.
+      </p>
+    </div>
+    <div class="col-md-4">
+      <div class="card-panel p-4">
+        <div class="mono" style="color:var(--text-faint); font-size:0.75rem; text-transform:uppercase;">Stack</div>
+        <ul class="mt-2" style="color:var(--text); font-size:0.9rem; padding-left:1.1rem;">
+          <li>Flask + SQLAlchemy</li>
+          <li>Scikit-learn / Pandas</li>
+          <li>Bootstrap 5 + Chart.js</li>
+          <li>MySQL</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,30 @@
+<footer style="border-top:1px solid var(--border-soft); margin-top:4rem;">
+  <div class="container py-5">
+    <div class="row">
+      <div class="col-md-4 mb-4">
+        <div class="brand mb-2">
+          {% include 'partials/signal_mark.html' %}
+          NeuroCloud
+        </div>
+        <p style="color:var(--text-muted); font-size:0.9rem;">AI-based anomaly detection for cloud infrastructure. Spot the spike before it becomes an outage.</p>
+      </div>
+      <div class="col-md-2 mb-4">
+        <h6 style="color:var(--text-muted); font-size:0.75rem; text-transform:uppercase; letter-spacing:0.06em;">Product</h6>
+        <a href="{{ url_for('main.features') }}" class="d-block py-1" style="color:var(--text); font-size:0.9rem;">Features</a>
+        <a href="{{ url_for('main.pricing') }}" class="d-block py-1" style="color:var(--text); font-size:0.9rem;">Pricing</a>
+      </div>
+      <div class="col-md-2 mb-4">
+        <h6 style="color:var(--text-muted); font-size:0.75rem; text-transform:uppercase; letter-spacing:0.06em;">Company</h6>
+        <a href="{{ url_for('main.about') }}" class="d-block py-1" style="color:var(--text); font-size:0.9rem;">About</a>
+        <a href="{{ url_for('main.contact') }}" class="d-block py-1" style="color:var(--text); font-size:0.9rem;">Contact</a>
+      </div>
+      <div class="col-md-2 mb-4">
+        <h6 style="color:var(--text-muted); font-size:0.75rem; text-transform:uppercase; letter-spacing:0.06em;">Support</h6>
+        <a href="{{ url_for('main.help_center') }}" class="d-block py-1" style="color:var(--text); font-size:0.9rem;">Help Center</a>
+      </div>
+    </div>
+    <div class="pt-3 mt-3" style="border-top:1px solid var(--border-soft); color:var(--text-faint); font-size:0.82rem;">
+      &copy; {{ current_year }} NeuroCloud. Built as an academic major project.
+    </div>
+  </div>
+</footer>

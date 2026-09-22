@@ -1,0 +1,62 @@
+{% extends "dashboard/base_dashboard.html" %}
+{% set active_page = 'detection' %}
+{% block title %}AI Detection{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h4 class="mb-0">AI Anomaly Detection</h4>
+    <p style="color:var(--text-muted); font-size:0.88rem; margin:0;">Anomalies flagged by the active model, with rule-based remediation recommendations.</p>
+  </div>
+  <form method="POST" action="{{ url_for('ai.detect') }}">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <button type="submit" class="btn btn-signal btn-sm"><i class="bi bi-radar"></i> Run Detection Now</button>
+  </form>
+</div>
+
+<div class="d-flex gap-2 mb-3">
+  <a href="{{ url_for('ai.anomalies') }}" class="btn btn-outline-signal btn-sm {{ 'active' if not request.args.get('severity') }}">All</a>
+  {% for sev in ['critical','high','medium','low'] %}
+  <a href="{{ url_for('ai.anomalies', severity=sev) }}" class="btn btn-outline-signal btn-sm">{{ sev|capitalize }}</a>
+  {% endfor %}
+</div>
+
+{% if anomalies %}
+{% for a in anomalies %}
+<div class="card-panel p-3 mb-2">
+  <div class="d-flex justify-content-between align-items-start">
+    <div class="flex-fill">
+      <div class="d-flex align-items-center gap-2 mb-1">
+        <span class="badge-severity-{{ a.severity }} px-2 py-1 rounded" style="font-size:0.68rem;">{{ a.severity }}</span>
+        <span style="font-weight:600;">{{ a.anomaly_type }}</span>
+        <span class="mono" style="color:var(--text-faint); font-size:0.76rem;">on {{ servers_by_id[a.server_id].name if a.server_id in servers_by_id else '#' ~ a.server_id }}</span>
+        {% if a.resolved %}<span class="badge-severity-low px-2 py-1 rounded" style="font-size:0.65rem;">RESOLVED</span>{% endif %}
+      </div>
+      <div class="mono" style="color:var(--text-faint); font-size:0.76rem; margin-bottom:0.5rem;">
+        {{ a.detected_at.strftime('%d %b %Y, %H:%M') }} &middot; risk score {{ a.anomaly_score }}/100 &middot; model: {{ a.model_used }}
+      </div>
+      {% if a.recs %}
+      <div style="border-left: 2px solid var(--signal); padding-left: 0.75rem;">
+        {% for r in a.recs %}
+        <div style="font-size:0.84rem; color:var(--text-muted); margin-bottom:0.25rem;">
+          <span class="badge-severity-{{ 'critical' if r.priority=='critical' else ('high' if r.priority=='high' else 'medium') }} px-2 py-1 rounded" style="font-size:0.62rem;">{{ r.priority }}</span>
+          {{ r.recommendation_text }}
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+    </div>
+    {% if not a.resolved %}
+    <form method="POST" action="{{ url_for('ai.resolve_anomaly', anomaly_id=a.id) }}">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button type="submit" class="btn btn-outline-signal btn-sm">Resolve</button>
+    </form>
+    {% endif %}
+  </div>
+</div>
+{% endfor %}
+{% else %}
+<div class="card-panel p-5 text-center">
+  <p style="color:var(--text-muted);">No anomalies detected yet. Click "Run Detection Now" once you have servers with metrics and a trained model.</p>
+</div>
+{% endif %}
+{% endblock %}

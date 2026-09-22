@@ -1,0 +1,282 @@
+/* =========================================================================
+   NeuroCloud Design System
+   Concept: a professional cloud-platform identity — royal blue as the
+   primary signal color, cyan as an accent, deep slate-navy surfaces.
+   Dark mode is default; a light theme is available via [data-theme="light"]
+   on <html>, toggled and persisted from the topbar.
+   ========================================================================= */
+
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+:root {
+  /* Color tokens — dark theme (default) */
+  --bg: #0F172A;
+  --surface: #1E293B;
+  --surface-2: #263449;
+  --surface-hover: #2C3B57;
+  --border: #33415C;
+  --border-soft: #24314A;
+
+  --text: #E2E8F0;
+  --text-muted: #94A3B8;
+  --text-faint: #64748B;
+
+  --primary: #2563EB;      /* royal blue — brand / primary actions */
+  --primary-dim: #1E3A8A;
+  --secondary: #3B82F6;    /* sky blue */
+  --accent: #06B6D4;       /* cyan */
+  --success: #22C55E;
+  --warning: #F59E0B;
+  --danger: #EF4444;
+  --danger-dim: #7F1D1D;
+  --hover-accent: #60A5FA;
+
+  /* Semantic aliases (kept for compatibility with existing components) */
+  --signal: var(--primary);
+  --signal-dim: var(--primary-dim);
+  --alert: var(--danger);
+  --alert-dim: var(--danger-dim);
+  --info: var(--secondary);
+
+  --font-display: 'Space Grotesk', sans-serif;
+  --font-body: 'Inter', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+
+  --radius: 10px;
+  --radius-sm: 6px;
+  --shadow-card: 0 1px 0 rgba(255,255,255,0.03) inset, 0 8px 24px rgba(0,0,0,0.28);
+  --hero-gradient: linear-gradient(135deg, #0F172A, #1E3A8A);
+}
+
+[data-theme="light"] {
+  --bg: #F8FAFC;
+  --surface: #FFFFFF;
+  --surface-2: #F1F5F9;
+  --surface-hover: #E2E8F0;
+  --border: #CBD5E1;
+  --border-soft: #E2E8F0;
+
+  --text: #0F172A;
+  --text-muted: #475569;
+  --text-faint: #94A3B8;
+
+  --shadow-card: 0 1px 0 rgba(255,255,255,0.6) inset, 0 8px 24px rgba(15,23,42,0.08);
+  --hero-gradient: linear-gradient(135deg, #EFF6FF, #DBEAFE);
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  margin: 0;
+  padding: 0;
+  -webkit-font-smoothing: antialiased;
+}
+
+a { color: inherit; text-decoration: none; }
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  margin: 0 0 0.5em;
+}
+
+.mono { font-family: var(--font-mono); }
+
+/* Background: faint grid, like graph paper under the trace */
+.app-shell {
+  min-height: 100vh;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+  background-size: 28px 28px;
+}
+
+/* ---- Signal trace signature element --------------------------------- */
+.signal-trace { display: block; }
+.signal-trace path {
+  fill: none;
+  stroke: var(--signal);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.signal-trace .spike { stroke: var(--alert); }
+.signal-trace-divider {
+  width: 100%;
+  height: 28px;
+  opacity: 0.5;
+}
+
+/* Logo mark */
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.15rem;
+  color: var(--text);
+}
+.brand-mark { width: 30px; height: 22px; }
+
+/* ---- Buttons ---------------------------------------------------------- */
+.btn-signal {
+  background: var(--signal);
+  border: none;
+  color: #06201C;
+  font-weight: 600;
+  border-radius: var(--radius-sm);
+  padding: 0.55rem 1.15rem;
+  transition: filter 0.15s ease, transform 0.1s ease;
+}
+.btn-signal:hover { filter: brightness(1.08); color: #06201C; }
+.btn-signal:active { transform: translateY(1px); }
+
+.btn-outline-signal {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: var(--radius-sm);
+  padding: 0.55rem 1.15rem;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+.btn-outline-signal:hover { border-color: var(--signal); background: rgba(37,99,235,0.08); color: var(--text); }
+
+/* ---- Cards -------------------------------------------------------- */
+.card-panel {
+  background: var(--surface);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-card);
+}
+
+.stat-card {
+  background: var(--surface);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius);
+  padding: 1.1rem 1.25rem;
+  position: relative;
+  overflow: hidden;
+}
+.stat-card .stat-label {
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 600;
+}
+.stat-card .stat-value {
+  font-family: var(--font-mono);
+  font-size: 1.9rem;
+  font-weight: 600;
+  margin-top: 0.35rem;
+}
+.stat-card.is-signal { border-top: 2px solid var(--signal); }
+.stat-card.is-alert { border-top: 2px solid var(--alert); }
+.stat-card.is-warning { border-top: 2px solid var(--warning); }
+
+/* ---- Forms -------------------------------------------------------- */
+.form-control-dark {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: var(--radius-sm);
+  padding: 0.65rem 0.85rem;
+}
+.form-control-dark:focus {
+  background: var(--surface-2);
+  border-color: var(--signal);
+  color: var(--text);
+  box-shadow: 0 0 0 3px rgba(37,99,235,0.18);
+  outline: none;
+}
+label.form-label-dark {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  font-weight: 500;
+  margin-bottom: 0.35rem;
+}
+
+.auth-shell {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg);
+  background-image:
+    linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+  background-size: 28px 28px;
+  padding: 2rem 1rem;
+}
+.auth-card {
+  width: 100%;
+  max-width: 420px;
+  background: var(--surface);
+  border: 1px solid var(--border-soft);
+  border-radius: 14px;
+  padding: 2.25rem 2rem;
+  box-shadow: var(--shadow-card);
+}
+
+/* ---- Sidebar / topbar (used from Phase 2 dashboard onward) --------- */
+.sidebar {
+  width: 240px;
+  background: var(--surface);
+  border-right: 1px solid var(--border-soft);
+  height: 100vh;
+  overflow-y: auto;
+  position: fixed;
+  top: 0; left: 0;
+  padding: 1.25rem 0.9rem 2rem;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+.sidebar::-webkit-scrollbar { width: 6px; }
+.sidebar::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+.sidebar .nav-link {
+  color: var(--text-muted);
+  padding: 0.6rem 0.75rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.92rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  margin-bottom: 0.15rem;
+}
+.sidebar .nav-link:hover { background: var(--surface-hover); color: var(--text); }
+.sidebar .nav-link.active { background: rgba(37,99,235,0.12); color: var(--signal); }
+
+.main-content { margin-left: 240px; padding: 1.75rem 2rem; }
+
+.topbar {
+  height: 60px;
+  border-bottom: 1px solid var(--border-soft);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-left: 240px;
+  padding: 0 2rem;
+  background: rgba(11,17,32,0.85);
+  backdrop-filter: blur(6px);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+/* Badges */
+.badge-severity-low { background: rgba(34,197,94,0.15); color: var(--success); }
+.badge-severity-medium { background: rgba(245,158,11,0.15); color: var(--warning); }
+.badge-severity-high { background: rgba(239,68,68,0.22); color: var(--danger); }
+.badge-severity-critical { background: var(--alert); color: #2b0b10; }
+
+@media (max-width: 900px) {
+  .sidebar { transform: translateX(-100%); transition: transform 0.2s ease; z-index: 50; }
+  .sidebar.open { transform: translateX(0); }
+  .main-content, .topbar { margin-left: 0; }
+}

@@ -1,0 +1,41 @@
+{% extends "dashboard/base_dashboard.html" %}
+{% set active_page = 'reports' %}
+{% block title %}Reports{% endblock %}
+{% block content %}
+<h4 class="mb-4">Reports</h4>
+
+<div class="card-panel p-4 mb-4" style="max-width:480px;">
+  <h6 class="mb-3">Generate a new report</h6>
+  <form method="POST" action="{{ url_for('reports.generate') }}">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <label class="form-label-dark">Format</label>
+    <select name="report_type" class="form-select form-control-dark mb-3">
+      <option value="csv">CSV</option>
+      <option value="excel">Excel (.xlsx)</option>
+      <option value="pdf">PDF</option>
+    </select>
+    <button type="submit" class="btn btn-signal btn-sm w-100">Generate Anomaly Report</button>
+  </form>
+</div>
+
+<div class="card-panel p-4">
+  <h6 class="mb-3">Your Reports</h6>
+  {% if reports %}
+  <table class="table table-borderless align-middle mb-0" style="color:var(--text); font-size:0.86rem;">
+    <thead><tr style="color:var(--text-faint); font-size:0.72rem; text-transform:uppercase;"><th>Title</th><th>Type</th><th>Created</th><th></th></tr></thead>
+    <tbody>
+      {% for r in reports %}
+      <tr style="border-top:1px solid var(--border-soft);">
+        <td>{{ r.title }}</td>
+        <td><span class="badge-severity-low px-2 py-1 rounded" style="font-size:0.68rem;">{{ r.report_type|upper }}</span></td>
+        <td class="mono" style="color:var(--text-faint); font-size:0.76rem;">{{ r.created_at.strftime('%d %b %H:%M') }}</td>
+        <td><a href="{{ url_for('reports.download', report_id=r.id) }}" class="btn btn-outline-signal btn-sm"><i class="bi bi-download"></i></a></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p style="color:var(--text-muted); font-size:0.86rem;">No reports generated yet.</p>
+  {% endif %}
+</div>
+{% endblock %}

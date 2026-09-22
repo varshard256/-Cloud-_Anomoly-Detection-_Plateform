@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Help Center{% endblock %}
+{% block content %}
+<section class="container" style="padding: 4rem 0; max-width:700px;">
+  <span class="mono" style="color:var(--signal); font-size:0.8rem;">// HELP CENTER</span>
+  <h1 class="mt-2 mb-4">Frequently asked questions.</h1>
+  <div class="accordion" id="faq">
+    {% set faqs = [
+      ('How are anomalies detected?', 'NeuroCloud trains Isolation Forest, Random Forest, One-Class SVM, and LOF models on uploaded or simulated metric data, then scores incoming metrics against the active model.'),
+      ('What metrics are monitored?', 'CPU, memory, disk usage/IO, network throughput/latency/packet loss, response time, error rate, request rate, active connections, and more — 17 metrics per server.'),
+      ('Can I export reports?', 'Yes — PDF, Excel, and CSV reports are available from the Reports section, including graphs and recommendations.'),
+    ] %}
+    {% for q, a in faqs %}
+    <div class="card-panel mb-2 p-3">
+      <strong>{{ q }}</strong>
+      <p style="color:var(--text-muted); font-size:0.9rem; margin-top:0.5rem; margin-bottom:0;">{{ a }}</p>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}

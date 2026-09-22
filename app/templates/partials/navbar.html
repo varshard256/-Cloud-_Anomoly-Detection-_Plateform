@@ -1,0 +1,30 @@
+<nav class="navbar navbar-expand-lg" style="background:rgba(15,23,42,0.9); border-bottom:1px solid var(--border-soft); backdrop-filter: blur(6px);">
+  <div class="container">
+    <a class="navbar-brand brand" href="{{ url_for('main.home') }}">
+      {% include 'partials/signal_mark.html' %}
+      NeuroCloud
+    </a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMain" style="border-color:var(--border);">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navMain">
+      <ul class="navbar-nav mx-auto">
+        <li class="nav-item"><a class="nav-link px-3" style="color:var(--text-muted);" href="{{ url_for('main.features') }}">Features</a></li>
+        <li class="nav-item"><a class="nav-link px-3" style="color:var(--text-muted);" href="{{ url_for('main.pricing') }}">Pricing</a></li>
+        <li class="nav-item"><a class="nav-link px-3" style="color:var(--text-muted);" href="{{ url_for('main.about') }}">About</a></li>
+        <li class="nav-item"><a class="nav-link px-3" style="color:var(--text-muted);" href="{{ url_for('main.contact') }}">Contact</a></li>
+      </ul>
+      <div class="d-flex gap-2 align-items-center">
+        <button id="theme-toggle" class="btn btn-outline-signal btn-sm" type="button" title="Toggle dark / light mode">
+          <i class="bi bi-moon-stars" id="theme-icon"></i>
+        </button>
+        {% if current_user.is_authenticated %}
+          <a href="{{ url_for('dashboard.index') }}" class="btn btn-signal btn-sm">Dashboard</a>
+        {% else %}
+          <a href="{{ url_for('auth.login') }}" class="btn btn-outline-signal btn-sm">Sign In</a>
+          <a href="{{ url_for('auth.register') }}" class="btn btn-signal btn-sm">Get Started</a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</nav>

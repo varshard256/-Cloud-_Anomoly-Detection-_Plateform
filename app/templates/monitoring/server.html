@@ -1,0 +1,108 @@
+{% extends "dashboard/base_dashboard.html" %}
+{% set active_page = 'resources' %}
+{% block title %}Live: {{ server.name }}{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h4 class="mb-0 mono">{{ server.name }} <span class="mono" style="color: var(--signal); font-size:0.7rem;">&#9679; LIVE</span></h4>
+    <p style="color:var(--text-muted); font-size:0.88rem; margin:0;">Auto-refreshing every 5 seconds.</p>
+  </div>
+  <a href="{{ url_for('servers.detail', server_id=server.id) }}" class="btn btn-outline-signal btn-sm">Server Details</a>
+</div>
+
+<div class="row g-3 mb-4" id="stat-row">
+  <div class="col-6 col-lg-3"><div class="stat-card is-signal"><div class="stat-label">CPU Usage</div><div class="stat-value" id="v-cpu">—</div></div></div>
+  <div class="col-6 col-lg-3"><div class="stat-card is-signal"><div class="stat-label">Memory Usage</div><div class="stat-value" id="v-mem">—</div></div></div>
+  <div class="col-6 col-lg-3"><div class="stat-card is-warning"><div class="stat-label">Disk Usage</div><div class="stat-value" id="v-disk">—</div></div></div>
+  <div class="col-6 col-lg-3"><div class="stat-card is-signal"><div class="stat-label">Network (Mbps)</div><div class="stat-value" id="v-net">—</div></div></div>
+</div>
+
+<div class="row g-3">
+  <div class="col-lg-6">
+    <div class="card-panel p-4"><h6 class="mb-3">CPU / Memory / Disk</h6><canvas id="chart1" height="140"></canvas></div>
+  </div>
+  <div class="col-lg-6">
+    <div class="card-panel p-4"><h6 class="mb-3">Network / Response Time / Error Rate</h6><canvas id="chart2" height="140"></canvas></div>
+  </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<script>
+const serverId = {{ server.id }};
+let chart1, chart2;
+const MAX_POINTS = 60;
+
+function baseOptions() {
+  const c = chartColors();
+  return {
+    responsive: true, animation: false,
+    scales: {
+      x: { ticks: { color: c.textMuted, maxTicksLimit: 6 }, grid: { color: c.grid } },
+      y: { ticks: { color: c.textMuted }, grid: { color: c.grid } },
+    },
+    plugins: { legend: { labels: { color: c.text } } },
+  };
+}
+
+async function bootstrap() {
+  const res = await fetch(`{{ url_for('monitoring.api_history') }}?server_id=${serverId}&limit=${MAX_POINTS}`);
+  const data = await res.json();
+  const labels = data.data.map(d => new Date(d.timestamp).toLocaleTimeString());
+
+  chart1 = new Chart(document.getElementById('chart1').getContext('2d'), {
+    type: 'line',
+    data: { labels, datasets: [
+      { label: 'CPU %', data: data.data.map(d => d.cpu_usage), borderColor: chartColors().primary, pointRadius: 0, tension: 0.3, borderWidth: 2 },
+      { label: 'Memory %', data: data.data.map(d => d.memory_usage), borderColor: chartColors().secondary, pointRadius: 0, tension: 0.3, borderWidth: 2 },
+      { label: 'Disk %', data: data.data.map(d => d.disk_usage), borderColor: chartColors().warning, pointRadius: 0, tension: 0.3, borderWidth: 1.5 },
+    ]},
+    options: baseOptions(),
+  });
+
+  chart2 = new Chart(document.getElementById('chart2').getContext('2d'), {
+    type: 'line',
+    data: { labels, datasets: [
+      { label: 'Network Mbps', data: data.data.map(d => d.network_throughput), borderColor: chartColors().primary, pointRadius: 0, tension: 0.3, borderWidth: 2 },
+      { label: 'Response ms', data: data.data.map(d => d.response_time), borderColor: chartColors().danger, pointRadius: 0, tension: 0.3, borderWidth: 1.5, yAxisID: 'y1' },
+      { label: 'Error %', data: data.data.map(d => d.error_rate), borderColor: chartColors().warning, pointRadius: 0, tension: 0.3, borderWidth: 1.5 },
+    ]},
+    options: { ...baseOptions(), scales: { ...baseOptions().scales, y1: { position: 'right', ticks: { color: chartColors().textMuted }, grid: { display: false } } } },
+  });
+
+  if (data.data.length) updateStats(data.data[data.data.length - 1]);
+}
+
+function updateStats(m) {
+  document.getElementById('v-cpu').textContent = m.cpu_usage.toFixed(1) + '%';
+  document.getElementById('v-mem').textContent = m.memory_usage.toFixed(1) + '%';
+  document.getElementById('v-disk').textContent = m.disk_usage.toFixed(1) + '%';
+  document.getElementById('v-net').textContent = m.network_throughput.toFixed(1);
+}
+
+function pushPoint(chart, values, label) {
+  chart.data.labels.push(label);
+  chart.data.datasets.forEach((ds, i) => ds.data.push(values[i]));
+  if (chart.data.labels.length > MAX_POINTS) {
+    chart.data.labels.shift();
+    chart.data.datasets.forEach(ds => ds.data.shift());
+  }
+  chart.update('none');
+}
+
+async function tick() {
+  try {
+    const res = await fetch(`{{ url_for('monitoring.api_tick') }}?server_id=${serverId}`, { method: 'POST', headers: { 'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').content } });
+    const data = await res.json();
+    if (data.status !== 'ok' || !data.metrics.length) return;
+    const m = data.metrics[0];
+    const label = new Date(m.timestamp).toLocaleTimeString();
+    pushPoint(chart1, [m.cpu_usage, m.memory_usage, m.disk_usage], label);
+    pushPoint(chart2, [m.network_throughput, m.response_time, m.error_rate], label);
+    updateStats(m);
+  } catch (e) { /* ignore transient errors */ }
+}
+
+bootstrap().then(() => setInterval(tick, 5000));
+</script>
+{% endblock %}
