@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # NeuroCloud — AI-Based Cloud Anomaly Detection Platform
 
 MCA Major Project — full-stack cloud monitoring platform: public marketing site,
@@ -154,3 +155,7 @@ neurocloud/
   leave `MAIL_SUPPRESS_SEND=True` for local development.
 - No automated test suite yet (the `tests/` folder is scaffolded but empty) — all
   verification so far has been manual/scripted end-to-end testing, not pytest.
+=======
+# -Cloud-_Anomoly-Detection-_Plateform
+loud Anomaly Detection is an AI/ML-based system designed to identify unusual or abnormal behavior in cloud infrastructure. It continuously analyzes infrastructure metrics such as CPU utilization, memory usage, disk usage, network traffic, response time, and resource consumption to detect patterns that may indicate performance issues, failures, 
+>>>>>>> 865b920fd6bc00c29646e58c8ab2c72cbe8b9df9
